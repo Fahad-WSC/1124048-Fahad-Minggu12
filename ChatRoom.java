@@ -7,11 +7,15 @@ public class ChatRoom {
     List<User> members;
     List<String> badWords;
     User admin;
+    List<User> mutedUsers;
+    List<String> chatHistory;
 
     public ChatRoom(String roomName) {
         this.roomName = roomName;
         this.members = new ArrayList<>();
         this.badWords = new ArrayList<>();
+        this.mutedUsers = new ArrayList<>();
+        this.chatHistory = new ArrayList<>();
     }
 
     public String getRoomName() {
@@ -52,6 +56,7 @@ public class ChatRoom {
 
     public void removeUser(User user) {
         if (user != null && members.remove(user)) {
+            mutedUsers.remove(user);
             user.removeChatRoom(this);
             System.out.println("[ChatRoom - " + roomName + "] " + user.getName() + " telah dikeluarkan dari room.");
         }
@@ -69,12 +74,31 @@ public class ChatRoom {
         removeUser(target);
     }
 
+    public void muteUser(User user) {
+        if (user != null && members.contains(user) && !mutedUsers.contains(user)) {
+            mutedUsers.add(user);
+            System.out.println("[ChatRoom - " + roomName + "] " + user.getName() + " telah di-mute.");
+        }
+    }
+
+    public void unmuteUser(User user) {
+        if (user != null && mutedUsers.remove(user)) {
+            System.out.println("[ChatRoom - " + roomName + "] " + user.getName() + " telah di-unmute.");
+        }
+    }
+
     public void sendBroadcast(User sender, String message) {
         if (!members.contains(sender)) {
             System.out.println("[ChatRoom - " + roomName + "] " + sender.getName() + " bukan anggota room ini.");
             return;
         }
+        if (mutedUsers.contains(sender)) {
+            System.out.println("[ChatRoom - " + roomName + "] Pesan dari " + sender.getName() + " tidak disebarkan karena sedang di-mute.");
+            return;
+        }
         String cleanMessage = filterMessage(message);
+        chatHistory.add("[" + roomName + "] (Broadcast) " + sender.getName() + ": " + cleanMessage);
+
         System.out.println("[ChatRoom - " + roomName + "] (Broadcast dari " + sender.getName() + "): " + cleanMessage);
         for (User member : members) {
             if (!member.equals(sender)) {
@@ -86,6 +110,10 @@ public class ChatRoom {
     public void sendPrivateMessage(User sender, String recipientName, String message) {
         if (!members.contains(sender)) {
             System.out.println("[ChatRoom - " + roomName + "] " + sender.getName() + " bukan anggota room ini.");
+            return;
+        }
+        if (mutedUsers.contains(sender)) {
+            System.out.println("[ChatRoom - " + roomName + "] Pesan privat dari " + sender.getName() + " tidak disebarkan karena sedang di-mute.");
             return;
         }
         User recipient = null;
@@ -100,7 +128,21 @@ public class ChatRoom {
             return;
         }
         String cleanMessage = filterMessage(message);
+        chatHistory.add("[" + roomName + "] (Private " + sender.getName() + " -> " + recipient.getName() + "): " + cleanMessage);
+
         System.out.println("[ChatRoom - " + roomName + "] (Private " + sender.getName() + " -> " + recipient.getName() + "): " + cleanMessage);
         recipient.receivePrivateMessage(sender, cleanMessage);
+    }
+
+    public void showHistory() {
+        System.out.println("=== Chat History (" + roomName + ") ===");
+        if (chatHistory.isEmpty()) {
+            System.out.println("(Belum ada riwayat pesan)");
+        } else {
+            for (int i = 0; i < chatHistory.size(); i++) {
+                System.out.println((i + 1) + ". " + chatHistory.get(i));
+            }
+        }
+        System.out.println("====================================");
     }
 }
