@@ -143,6 +143,5 @@ public class ChatRoom {
                 System.out.println((i + 1) + ". " + chatHistory.get(i));
             }
         }
-        System.out.println("====================================");
     }
 }
