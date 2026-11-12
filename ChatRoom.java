@@ -6,6 +6,7 @@ public class ChatRoom {
     String roomName;
     List<User> members;
     List<String> badWords;
+    User admin;
 
     public ChatRoom(String roomName) {
         this.roomName = roomName;
@@ -15,6 +16,10 @@ public class ChatRoom {
 
     public String getRoomName() {
         return roomName;
+    }
+
+    public User getAdmin() {
+        return admin;
     }
 
     public void addBadWord(String word) {
@@ -34,12 +39,41 @@ public class ChatRoom {
 
     public void registerUser(User user) {
         if (user != null && !members.contains(user)) {
+            if (admin == null) {
+                admin = user;
+                System.out.println("[ChatRoom - " + roomName + "] " + user.getName() + " bergabung sebagai Admin.");
+            } else {
+                System.out.println("[ChatRoom - " + roomName + "] " + user.getName() + " bergabung ke room.");
+            }
             members.add(user);
             user.setChatRoom(this);
         }
     }
 
+    public void removeUser(User user) {
+        if (user != null && members.remove(user)) {
+            user.removeChatRoom(this);
+            System.out.println("[ChatRoom - " + roomName + "] " + user.getName() + " telah dikeluarkan dari room.");
+        }
+    }
+
+    public void removeUser(User requester, User target) {
+        if (requester == null || !requester.equals(admin)) {
+            System.out.println("[ChatRoom - " + roomName + "] Akses ditolak: Hanya admin (" + (admin != null ? admin.getName() : "-") + ") yang dapat mengeluarkan pengguna.");
+            return;
+        }
+        if (target != null && target.equals(admin)) {
+            System.out.println("[ChatRoom - " + roomName + "] Admin tidak dapat mengeluarkan dirinya sendiri.");
+            return;
+        }
+        removeUser(target);
+    }
+
     public void sendBroadcast(User sender, String message) {
+        if (!members.contains(sender)) {
+            System.out.println("[ChatRoom - " + roomName + "] " + sender.getName() + " bukan anggota room ini.");
+            return;
+        }
         String cleanMessage = filterMessage(message);
         System.out.println("[ChatRoom - " + roomName + "] (Broadcast dari " + sender.getName() + "): " + cleanMessage);
         for (User member : members) {
@@ -50,6 +84,10 @@ public class ChatRoom {
     }
 
     public void sendPrivateMessage(User sender, String recipientName, String message) {
+        if (!members.contains(sender)) {
+            System.out.println("[ChatRoom - " + roomName + "] " + sender.getName() + " bukan anggota room ini.");
+            return;
+        }
         User recipient = null;
         for (User member : members) {
             if (member.getName().equalsIgnoreCase(recipientName)) {
