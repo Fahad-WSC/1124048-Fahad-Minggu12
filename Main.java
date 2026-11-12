@@ -11,5 +11,7 @@ public class Main {
         general.registerUser(cici);
 
         budi.send("Halo semuanya!");
+        System.out.println();
+        budi.sendPrivate("Cici", "Rahasia ya ini");
     }
 }

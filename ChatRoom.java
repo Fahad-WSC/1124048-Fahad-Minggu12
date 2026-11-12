@@ -29,4 +29,20 @@ public class ChatRoom {
             }
         }
     }
+
+    public void sendPrivateMessage(User sender, String recipientName, String message) {
+        User recipient = null;
+        for (User member : members) {
+            if (member.getName().equalsIgnoreCase(recipientName)) {
+                recipient = member;
+                break;
+            }
+        }
+        if (recipient == null) {
+            System.out.println("[ChatRoom - " + roomName + "] Pengguna '" + recipientName + "' tidak ditemukan di room.");
+            return;
+        }
+        System.out.println("[ChatRoom - " + roomName + "] (Private " + sender.getName() + " -> " + recipient.getName() + "): " + message);
+        recipient.receivePrivateMessage(sender, message);
+    }
 }
