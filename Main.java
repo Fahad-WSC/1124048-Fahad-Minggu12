@@ -1,18 +1,15 @@
 public class Main {
     public static void main(String[] args) {
+        ChatRoom general = new ChatRoom("General");
+
         User budi = new User("Budi");
         User andi = new User("Andi");
         User cici = new User("Cici");
 
-        budi.addContact(andi);
-        budi.addContact(cici);
+        general.registerUser(budi);
+        general.registerUser(andi);
+        general.registerUser(cici);
 
-        andi.addContact(budi);
-        andi.addContact(cici);
-
-        cici.addContact(budi);
-        cici.addContact(andi);
-
-        budi.sendGroupMessage("Halo semuanya!");
+        budi.send("Halo semuanya!");
     }
 }
